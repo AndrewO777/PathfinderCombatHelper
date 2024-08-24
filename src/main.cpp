@@ -6,78 +6,81 @@
 
 using std::cout,std::cin,std::string,std::map;
 
-map<string,Enemy> GetEnemies();
+map<string,Enemy> AddEnemies();
 void RollDamage(const Enemy& aEnemy);
 void RollHits(const Enemy& aEnemy);
+Enemy AddEnemy();
 
 std::random_device dev;
 std::mt19937 rng(dev());
 
 int main()
 {
-    map<string,Enemy> Enemies = GetEnemies();
- 
+    map<string,Enemy> Enemies = AddEnemies();
+
     while(true)
     {
         cout << '|';
         for(const auto& [key,value] : Enemies){
-            /*cout << "---------------\n";
-            cout << key << std::endl;
-            value.GetHp();
-            cout << "---------------\n";*/
             cout << value.GetName();
             cout << '|';
         }
         cout << '\n';
 
-        cout << "who?\n";
+        cout << "who (type \'end\' to quit or \'add\' to add a new enemy)?: ";
         string input;
         cin >> input;
 
-        if(input == "end")
+        if(input == "end"){
             break;
-        if(Enemies.find(input) == Enemies.end()){
+        }
+        else if(input == "add"){
+            Enemy aEnemy = AddEnemy();
+            Enemies[aEnemy.GetName()] = aEnemy;
+            continue;
+        }
+        else if(Enemies.find(input) == Enemies.end()){
             cout << input << " not found\n";
             continue;
         }
-        
-        {
-            int opt;
-            cout << "1. attack\n 2. heal\n 3. stats\n 4. roll damage\n 5. roll to hit: ";
-            cin >> opt;
-            switch(opt){
-                case 1:
-                    short dam;
-                    cout << "damage amt?: \n";
-                    cin >> dam;
-                    Enemies[input].TakeDamage(dam);
-                    break;
-                case 2:
-                    short heal;
-                    cout << "heal amt?: \n";
-                    cin >> heal;
-                    Enemies[input].Heal(heal);
-                    break;
-                case 3:
-                    Enemies[input].PrintStats();
-                    break;
-                case 4:
-                    RollDamage(Enemies[input]);
-                    break;
-                case 5:
-                    RollHits(Enemies[input]);
-                    break;
-                default:
-                    cout << "Invalid choice\n";
-                    break;
-            }
+
+        short opt;
+        cout << "1. hurt:\n2. heal:\n3. stats:\n4. roll damage:\n5. roll to hit: ";
+        cin >> opt;
+        switch(opt){
+            case 1:
+                short dam;
+                cout << "damage amount?: \n";
+                cin >> dam;
+                Enemies[input].TakeDamage(dam);
+                if(Enemies[input].GetHp() <= 0)
+                    Enemies.erase(input);
+                break;
+            case 2:
+                short heal;
+                cout << "heal amount?: \n";
+                cin >> heal;
+                Enemies[input].Heal(heal);
+                break;
+            case 3:
+                Enemies[input].PrintStats();
+                break;
+            case 4:
+                RollDamage(Enemies[input]);
+                break;
+            case 5:
+                RollHits(Enemies[input]);
+                break;
+            default:
+                cout << "Invalid choice\n";
+                break;
         }
     }
 
     return 0;
 }
 
-map<string,Enemy> GetEnemies()
+map<string,Enemy> AddEnemies()
 {
     short enemyCount;
     map<string,Enemy> enemies;
@@ -85,27 +88,8 @@ map<string,Enemy> GetEnemies()
     cin >> enemyCount;
     for(short i = 0; i < enemyCount; ++i)
     {
-        short vals[8];
-        cout << "hp?:";
-        cin >> vals[0];
-        cout << "ac?:";
-        cin >> vals[1];
-        cout << "reflex?:";
-        cin >> vals[2];
-        cout << "fort?:";
-        cin >> vals[3];
-        cout << "will?:";
-        cin >> vals[4];
-        cout << "dc?:";
-        cin >> vals[5];
-        cout << "damage bonus?:";
-        cin >> vals[6];
-        cout << "hit bonus?:";
-        cin >> vals[7];
-        string name;
-        cout << "name?:";
-        cin >> name;
-        enemies[name] = Enemy(name,vals[0],vals[1],vals[2],vals[3],vals[4],vals[5],vals[6],vals[7]);
+        Enemy aEnemy = AddEnemy();
+        enemies[aEnemy.GetName()] = aEnemy;
     }
     return enemies;
 }
@@ -140,7 +124,7 @@ void RollDamage(const Enemy& aEnemy){
         }
         curFace += 2;
     }
-    cout << "You deal " << damage << " +" << aEnemy.GetDamageBonus() << 
+    cout << "You deal " << damage << " +" << aEnemy.GetDamageBonus() <<
     " = " << damage + aEnemy.GetDamageBonus() << " damage!\n";
 }
 
@@ -151,7 +135,32 @@ void RollHits(const Enemy& aEnemy){
     std::uniform_int_distribution<std::mt19937::result_type> dist(1,20);
     for(short i = 0; i < rolls; ++i){
         short roll = dist(rng);
-        cout << "You got a " << roll << " +" << aEnemy.GetHitBonus() << 
+        cout << "You got a " << roll << " +" << aEnemy.GetHitBonus() <<
         " = " << roll + aEnemy.GetHitBonus() << '\n';
     }
+}
+
+
+Enemy AddEnemy(){
+    short vals[8];
+    cout << "hp?:";
+    cin >> vals[0];
+    cout << "ac?:";
+    cin >> vals[1];
+    cout << "reflex?:";
+    cin >> vals[2];
+    cout << "fort?:";
+    cin >> vals[3];
+    cout << "will?:";
+    cin >> vals[4];
+    cout << "dc?:";
+    cin >> vals[5];
+    cout << "damage bonus?:";
+    cin >> vals[6];
+    cout << "hit bonus?:";
+    cin >> vals[7];
+    string name;
+    cout << "name?:";
+    cin >> name;
+    return Enemy(name,vals[0],vals[1],vals[2],vals[3],vals[4],vals[5],vals[6],vals[7]);
 }
