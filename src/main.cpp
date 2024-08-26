@@ -10,12 +10,14 @@ map<string,Enemy> AddEnemies();
 void RollDamage(const Enemy& aEnemy);
 void RollHits(const Enemy& aEnemy);
 Enemy AddEnemy();
+void Attack(Enemy& aEnemy);
 
 std::random_device dev;
 std::mt19937 rng(dev());
 
 int main()
 {
+    //Use heap and pointer for maps
     map<string,Enemy> Enemies = AddEnemies();
 
     while(true)
@@ -45,7 +47,7 @@ int main()
         }
 
         short opt;
-        cout << "1. hurt:\n2. heal:\n3. stats:\n4. roll damage:\n5. roll to hit: ";
+        cout << "1. hurt:\n2. heal:\n3. stats:\n4. add attack:\n5. attack:";
         cin >> opt;
         switch(opt){
             case 1:
@@ -66,10 +68,10 @@ int main()
                 Enemies[input].PrintStats();
                 break;
             case 4:
-                RollDamage(Enemies[input]);
+                Enemies[input].AddAttack();
                 break;
             case 5:
-                RollHits(Enemies[input]);
+                Attack(Enemies[input]);
                 break;
             default:
                 cout << "Invalid choice\n";
@@ -94,55 +96,8 @@ map<string,Enemy> AddEnemies()
     return enemies;
 }
 
-void RollDamage(const Enemy& aEnemy){
-
-    short dice[5]; //Each index represent a different side count, ie: 4, 6, 8, 10, 12
-
-    cout << "How many d4s?: ";
-    cin >> dice[0];
-    cout << "How many d6s?: ";
-    cin >> dice[1];
-    cout << "How many d8s?: ";
-    cin >> dice[2];
-    cout << "How many d10s?: ";
-    cin >> dice[3];
-    cout << "How many d12s?: ";
-    cin >> dice[4];
-
-    short curFace = 4;
-    short damage = 0;
-    for(short& dieCount : dice){
-        if(dieCount == 0){
-            curFace += 2;
-            continue;
-        }
-        std::uniform_int_distribution<std::mt19937::result_type> dist(1,curFace);
-        for(short i = 0; i < dieCount; ++i){
-            short roll = dist(rng);
-            cout << roll << ',';
-            damage += roll;
-        }
-        curFace += 2;
-    }
-    cout << "You deal " << damage << " +" << aEnemy.GetDamageBonus() <<
-    " = " << damage + aEnemy.GetDamageBonus() << " damage!\n";
-}
-
-void RollHits(const Enemy& aEnemy){
-    short rolls;
-    cout << "How many rolls?: ";
-    cin >> rolls;
-    std::uniform_int_distribution<std::mt19937::result_type> dist(1,20);
-    for(short i = 0; i < rolls; ++i){
-        short roll = dist(rng);
-        cout << "You got a " << roll << " +" << aEnemy.GetHitBonus() <<
-        " = " << roll + aEnemy.GetHitBonus() << '\n';
-    }
-}
-
-
 Enemy AddEnemy(){
-    short vals[8];
+    short vals[6];
     cout << "hp?:";
     cin >> vals[0];
     cout << "ac?:";
@@ -155,12 +110,30 @@ Enemy AddEnemy(){
     cin >> vals[4];
     cout << "dc?:";
     cin >> vals[5];
-    cout << "damage bonus?:";
-    cin >> vals[6];
-    cout << "hit bonus?:";
-    cin >> vals[7];
     string name;
     cout << "name?:";
     cin >> name;
-    return Enemy(name,vals[0],vals[1],vals[2],vals[3],vals[4],vals[5],vals[6],vals[7]);
+    return Enemy(name,vals[0],vals[1],vals[2],vals[3],vals[4],vals[5]);
+}
+
+void Attack(Enemy& aEnemy){
+    string attackName;
+    cout << '|';
+    for(const auto& [key,value] : aEnemy._attacks){
+        cout << value.GetName();
+        cout << '|';
+    }
+    cout << '\n';
+    while(true){
+        string attackName;
+        cout << "which attack?: ";
+        cin >> attackName;
+        if(aEnemy._attacks.find(attackName) == aEnemy._attacks.end()){
+            cout << "Attack not found\n";
+        }
+        else{
+            aEnemy._attacks[attackName].DoAttacks(rng);
+            break;
+        }
+    }
 }
