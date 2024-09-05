@@ -16,12 +16,13 @@ public:
 
     //Setters
     void AddAttack();
+    void SetName(string name) { _name = name; };
 
     //Getters
     const short& GetHp() const { return _hp; }
     const string& GetName() const { return _name; };
 
-    //variables
+    //Variables
     map<string,Attack> _attacks;
 private:
     string _name;

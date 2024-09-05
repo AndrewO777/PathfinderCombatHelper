@@ -1,5 +1,7 @@
 #include<iostream>
 #include"headers/Enemy.hpp"
+#include<memory>
+#include<array>
 
 using std::cout,std::cin;
 
@@ -35,7 +37,8 @@ void Enemy::AddAttack(){
     string name;
     short hitBonus;
     short damageBonus;
-    short* dice = new short[5];
+    //auto dice = std::make_shared<std::array<short,5>>(std::array<short,5>{});
+    std::shared_ptr<short*> dice = std::make_shared<short*>(new short[5]);
     cout << "name?: ";
     cin >> name;
     cout << "hit bonus?: ";
@@ -43,14 +46,14 @@ void Enemy::AddAttack(){
     cout << "damage bonus?: ";
     cin >> damageBonus;
     cout << "How many d4s?: ";
-    cin >> dice[0];
+    cin >> (*dice)[0];
     cout << "How many d6s?: ";
-    cin >> dice[1];
+    cin >> (*dice)[1];
     cout << "How many d8s?: ";
-    cin >> dice[2];
+    cin >> (*dice)[2];
     cout << "How many d10s?: ";
-    cin >> dice[3];
+    cin >> (*dice)[3];
     cout << "How many d12s?: ";
-    cin >> dice[4];
+    cin >> (*dice)[4];
     _attacks[name] = Attack(name,hitBonus,damageBonus,dice);
 }

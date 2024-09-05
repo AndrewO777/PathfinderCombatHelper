@@ -8,15 +8,15 @@ using std::cout,std::cin;
 short Attack::RollDamage(std::mt19937& rng){
     short curFace = 4;
     short damage = 0;
-    std::shared_ptr<short[]> dice = GetDice();
+    std::shared_ptr<short*> dice = GetDice();
     for(short i = 0; i < 5; ++i){
-        if(dice[i] == 0){
+        if((*dice)[i] == 0){
             curFace += 2;
             continue;
         }
         std::uniform_int_distribution<std::mt19937::result_type> dist(1,curFace);
         string rollVals = "";
-        for(short j = 0; j < dice[i]; ++j){
+        for(short j = 0; j < (*dice)[i]; ++j){
             short roll = dist(rng);
             damage += roll;
             rollVals += std::to_string(roll);

@@ -10,6 +10,7 @@ map<string,Enemy> AddEnemies();
 void RollDamage(const Enemy& aEnemy);
 void RollHits(const Enemy& aEnemy);
 Enemy AddEnemy();
+Enemy CloneEnemy(const Enemy& aEnemy);
 void Attack(Enemy& aEnemy);
 
 std::random_device dev;
@@ -19,6 +20,7 @@ int main()
 {
     //Use heap and pointer for maps
     map<string,Enemy> Enemies = AddEnemies();
+    cout << "Welcome to the combat helper!\n";
 
     while(true)
     {
@@ -29,7 +31,7 @@ int main()
         }
         cout << '\n';
 
-        cout << "who (type \'end\' to quit or \'add\' to add a new enemy)?: ";
+        cout << "who (type \'end\' to quit, \'add\' to add a new enemy or \'clone\' to clone an existing enemy)?: ";
         string input;
         cin >> input;
 
@@ -38,7 +40,24 @@ int main()
         }
         else if(input == "add"){
             Enemy aEnemy = AddEnemy();
+            if(aEnemy.GetName() == "DontAdd"){
+                continue;
+            }
             Enemies[aEnemy.GetName()] = aEnemy;
+            continue;
+        }
+        else if(input == "clone"){
+            cout << "Which enemy to clone?: ";
+            string cloneName;
+            cin >> cloneName;
+            if(Enemies.find(cloneName) == Enemies.end()){
+                cout << "Enemy not found\n";
+                continue;
+            }
+            Enemy clone = CloneEnemy(Enemies[cloneName]);
+            if(clone.GetName() != cloneName){
+                Enemies[clone.GetName()] = clone;
+            }
             continue;
         }
         else if(Enemies.find(input) == Enemies.end()){
@@ -47,7 +66,7 @@ int main()
         }
 
         short opt;
-        cout << "1. hurt:\n2. heal:\n3. stats:\n4. add attack:\n5. attack:";
+        cout << "1. hurt:\n2. heal:\n3. stats:\n4. add attack:\n5. attack:\n6. cancel\n";
         cin >> opt;
         switch(opt){
             case 1:
@@ -73,6 +92,8 @@ int main()
             case 5:
                 Attack(Enemies[input]);
                 break;
+            case 6:
+                break;
             default:
                 cout << "Invalid choice\n";
                 break;
@@ -86,7 +107,7 @@ map<string,Enemy> AddEnemies()
 {
     short enemyCount;
     map<string,Enemy> enemies;
-    cout << "How many enemies?: ";
+    cout << "How many enemies(\'0\' to return)?: ";
     cin >> enemyCount;
     for(short i = 0; i < enemyCount; ++i)
     {
@@ -98,8 +119,11 @@ map<string,Enemy> AddEnemies()
 
 Enemy AddEnemy(){
     short vals[6];
-    cout << "hp?:";
+    cout << "hp(\'0\' to cancel)?:";
     cin >> vals[0];
+    if(vals[0] == 0){
+        return Enemy("DontAdd",vals[0],vals[1],vals[2],vals[3],vals[4],vals[5]);
+    }
     cout << "ac?:";
     cin >> vals[1];
     cout << "reflex?:";
@@ -116,6 +140,18 @@ Enemy AddEnemy(){
     return Enemy(name,vals[0],vals[1],vals[2],vals[3],vals[4],vals[5]);
 }
 
+Enemy CloneEnemy(const Enemy& aEnemy){
+    Enemy newEnemy = aEnemy;
+    cout << "name(\'cancel\' to return)?:";
+    string name;
+    cin >> name;
+    if(name == "cancel"){
+        return aEnemy;
+    }
+    newEnemy.SetName(name);
+    return newEnemy;
+}
+
 void Attack(Enemy& aEnemy){
     string attackName;
     cout << '|';
@@ -126,8 +162,11 @@ void Attack(Enemy& aEnemy){
     cout << '\n';
     while(true){
         string attackName;
-        cout << "which attack?: ";
+        cout << "which attack(\'cancel\' to return)?: ";
         cin >> attackName;
+        if(attackName == "cancel"){
+            return;
+        }
         if(aEnemy._attacks.find(attackName) == aEnemy._attacks.end()){
             cout << "Attack not found\n";
         }
